@@ -7,7 +7,7 @@ warning off
 addpath(genpath('functions'))
 data = load('D:\bci\09chendan\20180808215944_MI_chengdan_MI01.easy');
 
-% Motor imagery segamentation 
+% Motor imagery segamentation  start it 0.5 seconds before the marker sent 
 epoch_range = [-0.5 5.5];
 time_ranges = [0 5];
 lambda = 0.1;
@@ -36,7 +36,7 @@ for r = 1:size(flag_R,1)
         EEG.event(fsz(1) + r).type = 'R';
 end
 %% Epoch extraction
-% window for motor imagination 5s and relax 4.5s. For each epoch will eill
+% window for motor imagination 5s and relax 4.5s. For each epoch will 
 % add -0.5 seconds before action start and 0.5 seconds after action end
 rang_M = [-0.5 5.5] ;
 rang_R = [-0.5 5.0] ;
