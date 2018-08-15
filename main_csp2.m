@@ -7,6 +7,7 @@ warning off
 addpath(genpath('functions'))
 data = load('D:\bci\09chendan\20180808215944_MI_chengdan_MI01.easy');
 
+% Motor imagery segamentation 
 epoch_range = [-0.5 5.5];
 time_ranges = [0 5];
 lambda = 0.1;
