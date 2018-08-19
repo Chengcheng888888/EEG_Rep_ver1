@@ -5,9 +5,8 @@ clc; close all;clear all;
 % addpath = ('G:\desktop\BCI\ffd');
 warning off
 addpath(genpath('functions'))
-data = load('D:\bci\09chendan\20180808215944_MI_chengdan_MI01.easy');
+data = load('20180808215944_MI_chengdan_MI01.easy');
 
-% Motor imagery segamentation  start it 0.5 seconds before the marker sent 
 epoch_range = [-0.5 5.5];
 time_ranges = [0 5];
 lambda = 0.1;
@@ -36,7 +35,7 @@ for r = 1:size(flag_R,1)
         EEG.event(fsz(1) + r).type = 'R';
 end
 %% Epoch extraction
-% window for motor imagination 5s and relax 4.5s. For each epoch will 
+% window for motor imagination 5s and relax 4.5s. For each epoch will eill
 % add -0.5 seconds before action start and 0.5 seconds after action end
 rang_M = [-0.5 5.5] ;
 rang_R = [-0.5 5.0] ;
@@ -64,15 +63,37 @@ EEG.EpoFltData{k} = filtfilthd(b,a,EEG.epoch{k});
 end
 
 %% feature extraction  CSP
-C1_Data = EEG.EpoFltData{1}' ;
-C2_Data = EEG.EpoFltData{2}' ;
+C1_Data = EEG.EpoFltData{1}(1:2000,1:8)' ;
+C2_Data = EEG.EpoFltData{2}(1:1750,1:8)' ;
 
 [W] = f_CSP(C1_Data,C2_Data);
+% spatial filtered singel trail signal Z
+singel_trail = [C1_Data,C2_Data];
+Z = W * singel_trail;
+% plot  CSP filtered EEG data
+ figure 
+ subplot(4,1,1)
+ plot(Z(1,:))
+ 
+ subplot(4,1,2)
+ plot(Z(2,:))
+ 
+ subplot(4,1,3)
+ plot(Z(7,:))
+ 
+ subplot(4,1,4)
+ plot(Z(8,:))
+
 
 % log-variance feature extraction
+deno = var(Z(1,:)) + var(Z(2,:))+ var(Z(7,:))+ var(Z(8,:)) ;
 
-    X{1} = squeeze(log(var(W * C1_Data)));
-    X{2} = squeeze(log(var(W * C2_Data)));
+ X_1 = log(var(Z(1,:))/deno);
+ X_2 = log(var(Z(2,:))/deno);
+
+ X_7 = log(var(Z(7,:))/deno);
+ X_8 = log(var(Z(8,:))/deno); 
+
 
 %% classification SVM 
 % trainning data set construction 
