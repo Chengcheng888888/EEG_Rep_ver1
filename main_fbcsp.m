@@ -65,6 +65,7 @@ for fb = 4:4:35
     b = [b;b1];
     a = [a;a1];
 end
+% Band-pass filter patameter matrix
 bp_filter.b = b;
 bp_filter.a = a;
 EEG.EpoFltData  = {};
