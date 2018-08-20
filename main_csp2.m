@@ -102,7 +102,7 @@ EEG.epoch_data_edg = [epochM_edg;epochR_edg];
 
 %% feature extraction  CSP
 % extract the middle data 
-ex = 200;
+ex = 90;
 ex1 = ex + 1;
 C1_Data = EEG.epoch_edg{1}((ex*2000+1):(ex*2000+2000),1:8)' ;
 C2_Data = EEG.epoch_edg{2}((ex*2000+1):(ex*2000+2000),1:8)' ;
@@ -257,14 +257,20 @@ TR_MDL.svm_mdls
 
 %% Perform 10-Fold Cross_validation
 disp('########  Applying Cross-Validation    #################')
-CASE='SVM';
-[acc]=Cross_Validation_Haider(Train_Y', Train_X',CASE);
-CV_acc=acc.*100
+%% 10 - folder cross validation 
+data_svm  = label_data(1:4,:)';
+label_svm = label_data(  5,:)'+ 1;
 
+indices = crossvalind('Kfold',label_svm,10); 
+cp = classperf(label_svm); 
+for i = 1:10 
+ % take 1,2, ...10 as testing dataset. The rest as training data set
+      test = (indices == i); train = ~test;    
+      class = classify(data_svm(test,:),data_svm(train,:),label_svm(train,:));
+      classperf(cp,class,test);
+end
+  
 %% Evaluation or Testing
-
-[Label]=f_Adaptive_Learning_A(Test_X,TR_MDL);
+cp.ErrorRate   
 
 %%  SVM Classification accuracy---------------------------------------------
-SVM_class_error_Eval=(Test_Y-Label.SVM); %% The error from the classifier
-SVM_ac=-(1-(sum((SVM_class_error_Eval).^2)./length(SVM_class_error_Eval)))*100
