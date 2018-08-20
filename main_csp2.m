@@ -46,8 +46,7 @@ for r = 1:size(flag_R,1)
         EEG.event(fsz(1) + r).type = 'R';
 end
 %% Epoch extraction
-% window for motor imagination 5s and relax 4.5s. For each trail, construct
-% a fixed window of 4s 
+% window for motor imagination 5s and relax 4.5s. For each trail
 rang_M = [0 5.0] ;
 rang_R = [0 4.5] ;
 
@@ -76,7 +75,7 @@ EEG.EpoFltData = {};
 for k = 1:2 
 EEG.EpoFltData{k} = filtfilthd(b,a,EEG.epoch{k});
 end
-%% reduce the edge effect
+%% reduce the edge effect. 2) construct a 4s window for each trail
 rang_M_Edg = [0.5 4.5] ;
 rang_R_Edg = [0.5 4.5] ;
 
