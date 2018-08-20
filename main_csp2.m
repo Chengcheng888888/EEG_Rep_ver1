@@ -17,6 +17,7 @@ addpath(genpath('functions'))
 %  
 % data_all = [data1;data2;data3;data4;data5;data6;data7];
 %% data loading part II
+
  data1 = load ('D:\bci\09.mat');
  data = data1.data_all;
 %%
@@ -209,24 +210,36 @@ for i = 5:6
 %    set(0,'defaultfigurecolor','w')
 end 
 %% epoch feature extraction  
-Z_M = Z(:,1:2000);
-Z_R = Z(:,1:2000);
-
-% feature for movments
-deno_M = var(Z_M(1,:)) + var(Z_M(2,:))+ var(Z_M(7,:))+ var(Z_M(8,:)) ;
- M_1 = log(var(Z_M(1,:))/deno_M);
- M_2 = log(var(Z_M(2,:))/deno_M);
- M_7 = log(var(Z_M(7,:))/deno_M);
- M_8 = log(var(Z_M(8,:))/deno_M); 
- 
- % feature for relax
- deno_R = var(Z_R(1,:)) + var(Z_R(2,:))+ var(Z_R(7,:))+ var(Z_R(8,:)) ;
- R_1 = log(var(Z_R(1,:))/deno_R);
- R_2 = log(var(Z_R(2,:))/deno_R);
- R_7 = log(var(Z_R(7,:))/deno_R);
- R_8 = log(var(Z_R(8,:))/deno_R); 
- 
-
+tic;
+Z = {};
+Z_sum = [];
+class_label_m =  1;
+class_label_r = -1;
+class_data = [];
+tic
+for i = 1:size(sum_wnd_m_edg,1)
+    for k = 1:2
+        Z{k} = W * EEG.epoch_edg{k}(((i-1)*Fs*4+1):i*Fs*4,:)';
+        Z_sum = [Z_sum,Z{k}];
+    end
+    deno_M = var(Z{1}(1,:)) + var(Z{1}(2,:))+ var(Z{1}(7,:))+ var(Z{1}(8,:)) ;
+     M_1 = log(var(Z{1}(1,:))/deno_M);
+     M_2 = log(var(Z{1}(2,:))/deno_M);
+     M_7 = log(var(Z{1}(7,:))/deno_M);
+     M_8 = log(var(Z{1}(8,:))/deno_M); 
+     
+     deno_R = var(Z{2}(1,:)) + var(Z{2}(2,:))+ var(Z{2}(7,:))+ var(Z{2}(8,:)) ;
+     R_1 = log(var(Z{2}(1,:))/deno_M);
+     R_2 = log(var(Z{2}(2,:))/deno_M);
+     R_7 = log(var(Z{2}(7,:))/deno_M);
+     R_8 = log(var(Z{2}(8,:))/deno_M); 
+     
+     
+     class1 = [M_1;M_2;M_7;M_8;class_label_m];
+     class2 = [R_1;R_2;R_7;R_8;class_label_r];
+     class_data = [class_data,class1,class2];
+end
+toc
 
 %% classification SVM 
 % trainning data set construction 
