@@ -5,7 +5,7 @@ clc; close all;clear all;
 % addpath = ('G:\desktop\BCI\ffd');
 warning off
 addpath(genpath('functions'))
-data = load('20180808215944_MI_chengdan_MI01.easy');
+data = load('20180808223920_MI_chengdan_mi03.easy');
 
 cross_wait = 5;
 
@@ -102,13 +102,48 @@ for i = 1:2
 %    set(0,'defaultfigurecolor','w')
 end 
 
-deno = var(Z(1,:)) + var(Z(2,:))+ var(Z(7,:))+ var(Z(8,:)) ;
+%% temp testing for Z7 and Z8
+figure ('color',[1 1 1])
+for i = 7:8
+%   subplot(size(Z,1),1,i)
+    subplot(2,1,2^(i-7))
+    plot(Z(i,:))
+%     set(gca, 'xtick',0:2000:5000,'ytick',[min(Z(i,:)) max(Z(i,:))]);
+    set(gca, 'xtick',0:1000:5000);
+    hold on 
+    plot([2000,2000],[y*min(Z(i,:)) y*max(Z(i,:))],'r')
+    hold on 
+    plot([2000+1750,2000+1750],[min(Z(i,:)) max(Z(i,:))],'r')
+%  figure labeling
+    title ('band-pass filtered EEG after applying the CSP filters.')
+    xlabel('Time in ms')
+    ylabel('Amptitute')
+    text(0,ad_y*max(Z(i,:)),'\leftarrow Movement','color','r')
+    text(2000,ad_y*max(Z(i,:)),'\leftarrow Relax','color','r')
+    text(3750,ad_y*max(Z(i,:)),'\leftarrow Movement','color','r')
+    k = i;   
+    legend(['Z',num2str(k)], 'Location','southwest') 
+%    set(0,'defaultfigurecolor','w')
+end 
+ 
+%% epoch feature extraction  
+Z_M = Z(:,1:2000);
+Z_R = Z(:,1:1750);
 
- X_1 = log(var(Z(1,:))/deno);
- X_2 = log(var(Z(2,:))/deno);
-
- X_7 = log(var(Z(7,:))/deno);
- X_8 = log(var(Z(8,:))/deno); 
+% feature for movments
+deno_M = var(Z_M(1,:)) + var(Z_M(2,:))+ var(Z_M(7,:))+ var(Z_M(8,:)) ;
+ M_1 = log(var(Z_M(1,:))/deno_M);
+ M_2 = log(var(Z_M(2,:))/deno_M);
+ M_7 = log(var(Z_M(7,:))/deno_M);
+ M_8 = log(var(Z_M(8,:))/deno_M); 
+ 
+ % feature for relax
+ deno_R = var(Z_R(1,:)) + var(Z_R(2,:))+ var(Z_R(7,:))+ var(Z_R(8,:)) ;
+ R_1 = log(var(Z_R(1,:))/deno_R);
+ R_2 = log(var(Z_R(2,:))/deno_R);
+ R_7 = log(var(Z_R(7,:))/deno_R);
+ R_8 = log(var(Z_R(8,:))/deno_R); 
+ 
 
 
 %% classification SVM 
