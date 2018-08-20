@@ -241,39 +241,18 @@ for i = 1:size(sum_wnd_m_edg,1)
 end
 toc
 
-%% KNN
+%% classification KNN
+% trainning data set construction 
+Train_X = label_data(1:4,1:0.9*size(label_data,2));
+Train_Y = label_data(  5,1:0.9*size(label_data,2))+1;
 
 % model for knn
 Mdl = fitcknn(Train_X',Train_Y') ;
 Mdl.NumNeighbors = 4;  
 % prediction
-flwrClass = predict(Mdl,Test_X);
+flwrClass = predict(Mdl,Train_X');
 % validation 
 CVMdl = crossval(Mdl);  
 % k-foler corss validatin lost caculation 
-kloss = kfoldLoss(CVMdl);
-rloss = resubLoss(Mdl)  ;
-
-
-%==========================================================================
-%#################### Training #################################
-% Train the Classifiers on Training Data
-size(Train_X)
-disp('#######  Training The SVM Classsifier ##########')
-TR_MDL.svm_mdls=svmtrain(Train_X,Train_Y,'showplot',true,'kktviolationlevel',0.05);
-TR_MDL.svm_mdls
-test = 8;
-
-%% Perform 10-Fold Cross_validation
-disp('########  Applying Cross-Validation    #################')
-CASE='SVM';
-[acc]=Cross_Validation_Haider(Train_Y', Train_X',CASE);
-CV_acc=-acc.*100
-
-%% Evaluation or Testing
-
-[Label]=f_Adaptive_Learning_A(Test_X,TR_MDL);
-
-%%  SVM Classification accuracy---------------------------------------------
-SVM_class_error_Eval=(Test_Y-Label.SVM); %% The error from the classifier
-SVM_ac=-(1-(sum((SVM_class_error_Eval).^2)./length(SVM_class_error_Eval)))*100
+kloss = kfoldLoss(CVMdl)
+rloss = resubLoss(Mdl)  
