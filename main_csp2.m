@@ -1,5 +1,6 @@
 %% CSP feature extradtion 
 %% = data pre-processing ===
+tic;
 clc; close all;clear all;
 % loading Enobio raw EEG data  
 % addpath = ('G:\desktop\BCI\ffd');
@@ -210,12 +211,11 @@ for i = 5:6
 %    set(0,'defaultfigurecolor','w')
 end 
 %% epoch feature extraction  
-tic;
 Z = {};
 Z_sum = [];
 class_label_m =  1;
 class_label_r = -1;
-class_data = [];
+label_data = [];
 tic
 for i = 1:size(sum_wnd_m_edg,1)
     for k = 1:2
@@ -237,23 +237,15 @@ for i = 1:size(sum_wnd_m_edg,1)
      
      class1 = [M_1;M_2;M_7;M_8;class_label_m];
      class2 = [R_1;R_2;R_7;R_8;class_label_r];
-     class_data = [class_data,class1,class2];
+     label_data = [label_data,class1,class2];
 end
 toc
 
 %% classification SVM 
-% trainning data set construction 
-X1 =  X{1};
-X2 =  X{2};
-Y1 =  -ones(1,size(X1,2));
-Y2 =   ones(1,size(X2,2));
-A = [X1,X2];
-B = [Y1,Y2];
-Train_X = A(:,1:1000:length(A)); 
-Train_Y = B(:,1:1000:length(B));
+% trainning data set construction +
 
-Test_X = A(:,2:1000:length(A))'; 
-Test_Y = B(:,2:1000:length(B))';
+Train_X = label_data(1:4,1:0.9*size(label_data,2));
+Train_Y = label_data(  5,1:0.9*size(label_data,2));
 
 %==========================================================================
 %#################### Training #################################
@@ -262,13 +254,12 @@ size(Train_X)
 disp('#######  Training The SVM Classsifier ##########')
 TR_MDL.svm_mdls=svmtrain(Train_X,Train_Y,'showplot',true,'kktviolationlevel',0.05);
 TR_MDL.svm_mdls
-test = 8;
 
 %% Perform 10-Fold Cross_validation
 disp('########  Applying Cross-Validation    #################')
 CASE='SVM';
 [acc]=Cross_Validation_Haider(Train_Y', Train_X',CASE);
-CV_acc=-acc.*100
+CV_acc=acc.*100
 
 %% Evaluation or Testing
 
