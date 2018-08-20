@@ -7,9 +7,6 @@ warning off
 addpath(genpath('functions'))
 data = load('20180808215944_MI_chengdan_MI01.easy');
 
-epoch_range = [0.5 4.5];
-time_ranges = [0 5];
-lambda = 0.1;
 cross_wait = 5;
 
 % EEG structure define
@@ -41,15 +38,19 @@ rang_M = [0.5 4.5] ;
 rang_R = [0.5 4.0] ;
 
 epochM = [];
+sum_wnd_m = [];
 for i = 1: size(flag_M, 1)
     wnd_m = rang_M * Fs +  flag_M(i); 
-    epochM = [epochM;EEG.data(wnd_m(1):wnd_m(2),1:8)];
+    epochM = [epochM;EEG.data(wnd_m(1):wnd_m(2)-1,1:8)];
+    sum_wnd_m = [sum_wnd_m;wnd_m];
 end
 
 epochR = [];
+sum_wnd_r = [];
 for i = 1: size(flag_R, 1)
     wnd_r = rang_R * Fs +  flag_R(i); 
-    epochR = [epochR;EEG.data(wnd_r(1):wnd_r(2),1:8)];
+    epochR = [epochR;EEG.data(wnd_r(1):wnd_r(2)-1,1:8)];
+    sum_wnd_r = [sum_wnd_r;wnd_r];
 end
 EEG.epoch = {epochM , epochR};
 EEG.epoch_data = [epochM;epochR];
@@ -63,29 +64,44 @@ EEG.EpoFltData{k} = filtfilthd(b,a,EEG.epoch{k});
 end
 
 %% feature extraction  CSP
-C1_Data = EEG.EpoFltData{1}(250:2250,1:8)' ;
-C2_Data = EEG.EpoFltData{2}(250:2000,1:8)' ;
+% extract the middle data 
+ex = 10;
+ex1 = ex + 1;
+C1_Data = EEG.EpoFltData{1}((ex*2000+1):(ex*2000+2000),1:8)' ;
+C2_Data = EEG.EpoFltData{2}((ex*1750+1):(ex*1750+1750),1:8)' ;
 
 [W] = f_CSP(C1_Data,C2_Data);
 % spatial filtered singel trail signal Z
 singel_trail = EEG.data(flag_M:(flag_R + 4.5*Fs),1:8)';
-singel_trail = [EEG.EpoFltData{1}(1:3000,1:8)',EEG.EpoFltData{1}(1:2750,1:8)'];
-Z = W * singel_trail;
+feature_trail = [C1_Data,C2_Data,EEG.EpoFltData{1}((ex1*2000+1):(ex1*2000+2000),1:8)'];
+Z = W * feature_trail;
 % plot  CSP filtered EEG data
- figure 
- subplot(4,1,1)
- plot(Z(1,:))
- 
- subplot(4,1,2)
- plot(Z(2,:))
- 
- subplot(4,1,3)
- plot(Z(7,:))
- 
- subplot(4,1,4)
- plot(Z(8,:))
+figure ('color',[1 1 1])
+ad_y = 0.5;
+y = 1;
+% for i = 1:size(Z,1)
+for i = 1:2
+%   subplot(size(Z,1),1,i)
+    subplot(2,1,i)
+    plot(Z(i,:))
+%     set(gca, 'xtick',0:2000:5000,'ytick',[min(Z(i,:)) max(Z(i,:))]);
+    set(gca, 'xtick',0:1000:5000);
+    hold on 
+    plot([2000,2000],[y*min(Z(i,:)) y*max(Z(i,:))],'r')
+    hold on 
+    plot([2000+1750,2000+1750],[min(Z(i,:)) max(Z(i,:))],'r')
+%  figure labeling
+    title ('band-pass filtered EEG after applying the CSP filters.')
+    xlabel('Time in ms')
+    ylabel('Amptitute')
+    text(0,ad_y*max(Z(i,:)),'\leftarrow Movement','color','r')
+    text(2000,ad_y*max(Z(i,:)),'\leftarrow Relax','color','r')
+    text(3750,ad_y*max(Z(i,:)),'\leftarrow Movement','color','r')
+    k = i;   
+    legend(['Z',num2str(k)], 'Location','southwest') 
+%    set(0,'defaultfigurecolor','w')
+end 
 
-% log-variance feature extraction
 deno = var(Z(1,:)) + var(Z(2,:))+ var(Z(7,:))+ var(Z(8,:)) ;
 
  X_1 = log(var(Z(1,:))/deno);
