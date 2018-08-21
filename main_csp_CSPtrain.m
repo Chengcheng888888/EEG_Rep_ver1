@@ -159,6 +159,6 @@ end
 test = 8;
 k = 5;     % k used in KNN classification
 
-hypos_MI = KNN(features(F_MI(1:10),:),features(F_MI(1:10),:),labels,k);
+hypos_MI = KNN(features(:,F_MI(1:4)),features(:,F_MI(1:4)),labels,k);
 fprintf('Best 10 features from MI: %0.2f%% correct.\n',sum(hypos_MI == labels)/length(labels)*100);
 test = 8;
