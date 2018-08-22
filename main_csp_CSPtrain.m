@@ -110,6 +110,7 @@ for i = 1:size(flag_M, 1)
     Sum_W{i} = W;
 end 
 %% epoch feature extraction  
+tic;
 Z = {};
 Z_sum = [];
 class_label_m =  1;
@@ -118,7 +119,7 @@ label_data = [];
 
 features_cell ={};
 for iw = 1:size(flag_M, 1)
-    tic;
+ 
     for i = 1:size(sum_wnd_m_edg,1)
         for k = 1:2
             Z{k} = Sum_W{iw} * EEG.epoch_edg{k}(((i-1)*Fs*4+1):i*Fs*4,:)';
@@ -140,17 +141,25 @@ for iw = 1:size(flag_M, 1)
          class1 = [M_1;M_2;M_7;M_8;class_label_m];
          class2 = [R_1;R_2;R_7;R_8;class_label_r];
 %          label_data = [label_data,class1,class2];
+      features_cell.data{2*i-1  ,iw} = class1(1:4,:); 
+      features_cell.data{2*i    ,iw} = class2(1:4,:);
+      features_cell.label{2*i-1  ,iw} = class1(5,:); 
+      features_cell.label{2*i    ,iw} = class2(5,:);
+      
     end
-    features_cell{iw,1} = class1; 
-    features_cell{iw,2} = class2;
-    toc;
-end
 
+  
+end
+  toc;
 %% spatial filtered singel trail signal Z
 % feature selection 
- features_M = reshape(cell2mat(features_cell),5,[]);
- features = features_M(1:4,:)';
- labels   = features_M(  5,:)'+ 2;
+%  features_M = reshape(cell2mat(features_cell),5,[]);
+%  features = features_M(1:4,:)';
+%  features_slt= reshape(features_cell,448,1);
+%  f_slc_col = W;
+% features = 
+features = features_cell.data
+labels = features_cell.data{:,1} +2 ;
 
 [F_MI,W_MI] = MI(features,labels,3);
 
